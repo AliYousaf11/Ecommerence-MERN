@@ -15,3 +15,18 @@ exports.isAuthUser = catchAsyncError(async (req, res, next) => {
   req.user = await User.findById(decodedData.id);
   next();
 });
+
+// user or admin authentication........
+exports.checkUserRoles = (...userRole) => {
+  return (req, res, next) => {
+    if (!userRole.includes(req.user.role)) {
+      return next(
+        new ErrorHandler(
+          `Role : ${req.user.role} is not allowed this resource`,
+          403
+        )
+      );
+    }
+    next();
+  };
+};
