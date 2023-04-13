@@ -43,12 +43,12 @@ const userSchema = new mongoose.Schema({
 });
 
 // // hash password before the save the user........
-// userSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) {
-//     next();
-//   }
-//   this.password = await bcrypt.hash(this.password, 10);
-// });
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+  this.password = await bcrypt.hash(this.password, 10);
+});
 
 // generater the auth token using jwt....
 userSchema.methods.getJwtToken = function () {

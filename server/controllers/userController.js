@@ -4,6 +4,7 @@ const User = require("../model/userModel");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 
 //......... register
 exports.userRegister = catchAsyncError(async (req, res) => {
@@ -33,8 +34,8 @@ exports.userLogin = catchAsyncError(async (req, res, next) => {
   if (!user) {
     return next(new ErrorHandler("user not found ", 404));
   }
-
-  if (password !== user.password) {
+  const isMatchpassword = await bcrypt.compare(password, user.password);
+  if (!isMatchpassword) {
     return next(new ErrorHandler("Invalid credential's", 404));
   }
   sendToken(user, 200, res);
@@ -102,7 +103,6 @@ exports.resetuserPassword = catchAsyncError(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  console.log("Token -> ", req.params.token);
   // find user by token and expire it time.....
   const user = await User.findOne({
     resetPasswordToken,
