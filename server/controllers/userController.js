@@ -34,8 +34,7 @@ exports.userLogin = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("user not found ", 404));
   }
 
-  const isMatchpassword = user.compared(password);
-  if (!isMatchpassword) {
+  if (password !== user.password) {
     return next(new ErrorHandler("Invalid credential's", 404));
   }
   sendToken(user, 200, res);
@@ -103,9 +102,9 @@ exports.resetuserPassword = catchAsyncError(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  console.log(req.params.token);
+  console.log("Token -> ", req.params.token);
   // find user by token and expire it time.....
-  const user = user.findOne({
+  const user = await User.findOne({
     resetPasswordToken,
     resetPasswordExpires: { $gt: Date.now() },
   });
@@ -117,14 +116,13 @@ exports.resetuserPassword = catchAsyncError(async (req, res, next) => {
     );
   }
 
-  // user password mustch match with confirmpassword.........
-  if (req.body.password !== req.body.cofirmpassword) {
-    return next(
-      new ErrorHandler("password don't match with confirmpassword", 400)
-    );
+  // user password mustch1 match with confirmpassword.........
+  if (req.body.password !== req.body.confirmpassword) {
+    console.log(req.body.password);
+    return next(new ErrorHandler("password redquired", 400));
   }
 
-  user.req.body.password;
+  user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
 

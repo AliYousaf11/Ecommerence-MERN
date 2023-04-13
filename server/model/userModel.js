@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Plz enter name"],
     minLength: [4, "length must be 4"],
-    maxLength: [8, "length neither excced to 8"],
+    maxLength: [30, "length neither excced to 18"],
   },
   email: {
     type: String,
@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Plz enter password"],
-    minLength: [4, "length must be 4"],
+    minLength: [6, "length must be 6"],
     select: false,
   },
   avatar: {
@@ -42,24 +42,19 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date,
 });
 
-// hash password before the save the user........
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-  this.password = await bcrypt.hash(this.password, 10);
-});
+// // hash password before the save the user........
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("password")) {
+//     next();
+//   }
+//   this.password = await bcrypt.hash(this.password, 10);
+// });
 
 // generater the auth token using jwt....
 userSchema.methods.getJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.SecrectKey, {
     expiresIn: process.env.JwtExperies,
   });
-};
-
-// compare the user password with hash DB password....
-userSchema.methods.compared = function (enteredpassword) {
-  return bcrypt.compare(enteredpassword, this.password);
 };
 
 // reset the user passowrd

@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 //middlewares.....
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
 //......
 app.use("/api/v1", require("./routes/productsRoutes"));
 app.use("/api/v1", require("./routes/userRoutes"));
