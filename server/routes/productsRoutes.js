@@ -10,25 +10,18 @@ const {
 const router = express.Router();
 const { isAuthUser, checkUserRoles } = require("../middleware/auth");
 
-// get all prpducts........
 router.route("/products").get(getAllproducts);
-
-// get by id..............
 router.route("/product/:id").get(getbyIdProduct);
 
-// post new product........
+// admin routes.....
 router
-  .route("/product/new")
+  .route("/admin/product/new")
   .post(isAuthUser, checkUserRoles("admin"), createdproduct);
-
-// update by id............
 router
-  .route("/product/:id")
+  .route("/admin/product/:id")
   .put(isAuthUser, checkUserRoles("admin"), updateProduct);
-
-// delete by id...........
 router
-  .route("/product/:id")
+  .route("/admin/product/:id")
   .delete(isAuthUser, checkUserRoles("admin"), deleteProduct);
 
 module.exports = router;

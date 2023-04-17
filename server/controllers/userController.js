@@ -35,9 +35,11 @@ exports.userLogin = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("user not found ", 404));
   }
   const isMatchpassword = await bcrypt.compare(password, user.password);
+  console.log(isMatchpassword);
   if (!isMatchpassword) {
     return next(new ErrorHandler("Invalid credential's", 404));
   }
+  await user.save();
   sendToken(user, 200, res);
 });
 
@@ -118,7 +120,6 @@ exports.resetuserPassword = catchAsyncError(async (req, res, next) => {
 
   // user password mustch1 match with confirmpassword.........
   if (req.body.password !== req.body.confirmpassword) {
-    console.log(req.body.password);
     return next(new ErrorHandler("password redquired", 400));
   }
 
@@ -129,4 +130,56 @@ exports.resetuserPassword = catchAsyncError(async (req, res, next) => {
   await user.save();
 
   sendToken(user, 200, res);
+});
+
+//.........getuserDetail's
+exports.getUserDetails = catchAsyncError(async (req, res, next) => {
+  // find user by id..
+  const user = await User.findById(req.user.id);
+
+  //send to res..
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+//....user update passsword
+exports.updatePassword = catchAsyncError(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select("+password");
+
+  const isMatchpassword = await bcrypt.compare(
+    req.body.oldpassword,
+    user.password
+  );
+  if (!isMatchpassword) {
+    return next(new ErrorHandler("old password does'nt match", 404));
+  }
+  if (req.body.newpassword !== req.body.confirmpassword) {
+    return next(
+      new ErrorHandler("new password does'nt match with confim password"),
+      404
+    );
+  }
+
+  user.password = req.body.newpassword;
+  sendToken(user, 200, res);
+});
+
+//......update profile
+exports.updateProile = catchAsyncError(async (req, res, next) => {
+  const userNewDetails = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+
+  const user = await User.findByIdAndUpdate(req.user.id, userNewDetails, {
+    new: true,
+    runValidators: true,
+    userFindandModify: false,
+  });
+
+  res.status(200).json({
+    success: true,
+  });
 });
