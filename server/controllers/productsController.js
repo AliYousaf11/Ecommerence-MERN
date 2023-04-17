@@ -77,3 +77,49 @@ exports.getbyIdProduct = catchAsyncError(async (req, res, next) => {
     product,
   });
 });
+
+// create reviews and rating....
+exports.createReviews = catchAsyncError(async (req, res, next) => {
+  const { rating, comments, productId } = req.body;
+
+  // .......user review on product id.....
+  const review = {
+    user: req.user._id,
+    name: req.user.name,
+    rating: Number(rating),
+    comments,
+  };
+
+  // find product either avail or not?
+  const product = await Product.findById(productId);
+
+  // if same user give review again....
+  const isReviewd = product.reviews.find(
+    (rev) => rev.user.toString() === req.user._id.toString()
+  );
+
+  if (isReviewd) {
+    // for every review's check review.user._id  === login user id
+    product.reviews.forEach((rev) => {
+      if (rev.user.toString() === req.user._id.toString())
+        (rev.rating = rating), (rev.comments = comments);
+    });
+  } else {
+    product.reviews.push(review);
+    product.numOfReviews = product.reviews.length;
+  }
+
+  // calculate the all ratings values.....
+  let average = 0;
+  product.reviews.forEach((rev) => {
+    average += rev.rating;
+  });
+
+  // calculate the all ratings average.....
+  product.ratings = average / product.reviews.length;
+
+  await product.save({ validateBeforeSave: false });
+  res.status(200).json({
+    success: true,
+  });
+});

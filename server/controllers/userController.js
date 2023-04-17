@@ -5,6 +5,7 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
+const Product = require("../model/productModel");
 
 //......... register
 exports.userRegister = catchAsyncError(async (req, res) => {
@@ -30,15 +31,17 @@ exports.userLogin = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("plz fill all fields ", 404));
   }
 
+  console.log(email, password);
   const user = await User.findOne({ email }).select("+password");
+
   if (!user) {
     return next(new ErrorHandler("user not found ", 404));
   }
-  const isMatchpassword = await bcrypt.compare(password, user.password);
-  console.log(isMatchpassword);
+  const isMatchpassword = await user.compared(password);
   if (!isMatchpassword) {
     return next(new ErrorHandler("Invalid credential's", 404));
   }
+
   await user.save();
   sendToken(user, 200, res);
 });
@@ -181,5 +184,54 @@ exports.updateProile = catchAsyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+  });
+});
+
+// .......get all users
+exports.getAllUsers = catchAsyncError(async (req, res, next) => {
+  const users = await User.find();
+
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+// .......get all users by id ------- admin --------
+exports.getSingleUser = catchAsyncError(async (req, res, next) => {
+  const users = await User.findById(req.params.id);
+  if (!users) {
+    return next(new ErrorHandler("users not found ", 400));
+  }
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+//......delete user by id in ------- admin --------
+exports.delUser = catchAsyncError(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  await user.deleteOne();
+  res.status(200).json({
+    success: true,
+    message: `Admin successfully delete ${user.name}`,
+  });
+});
+
+//......update role by id in ------- admin --------
+exports.updateRole = catchAsyncError(async (req, res, next) => {
+  const userNewDetails = {
+    name: req.body.name,
+    email: req.body.email,
+    role: req.body.role,
+  };
+
+  const user = await User.findByIdAndUpdate(req.params.id, userNewDetails);
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: `admin successfully update Role ${req.body.name}`,
   });
 });

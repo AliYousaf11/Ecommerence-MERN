@@ -48,7 +48,12 @@ userSchema.pre("save", async function (next) {
     next();
   }
   this.password = await bcrypt.hash(this.password, 10);
+  console.log(this.password);
 });
+
+userSchema.methods.compared = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 // generater the auth token using jwt....
 userSchema.methods.getJwtToken = function () {
