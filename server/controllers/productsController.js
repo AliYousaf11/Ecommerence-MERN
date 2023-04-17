@@ -123,3 +123,61 @@ exports.createReviews = catchAsyncError(async (req, res, next) => {
     success: true,
   });
 });
+
+// get produts all reviews
+exports.getProductAllReviews = catchAsyncError(async (req, res, next) => {
+  const product = await Product.findById(req.query.id);
+
+  if (!product) {
+    return next(new ErrorHandler("product not found", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    reviews: product.reviews,
+  });
+});
+
+// delete review's
+exports.delReviews = catchAsyncError(async (req, res, next) => {
+  const product = await Product.findById(req.query.productId);
+
+  if (!product) {
+    return next(new ErrorHandler("product not found", 404));
+  }
+
+  console.log("query id -> ",req.query.id);
+
+  // delete the product reviews by given id....
+  const reviews = product.reviews.filter(
+    (rev) => rev._id.toString() !== req.query.id.toString()
+  );
+
+  // calculate the all ratings values.....
+  let average = 0;
+  reviews.forEach((rev) => {
+    average += rev.rating;
+  });
+
+  // calculate the all ratings average.....
+  const ratings = average / reviews.length;
+  const numOfReviews = reviews.length;
+
+  await Product.findByIdAndUpdate(
+    req.query.productId,
+    {
+      reviews,
+      ratings,
+      numOfReviews,
+    },
+    {
+      new: true,
+      runValidators: true,
+      userFindAndModify: false,
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+  });
+});
