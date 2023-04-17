@@ -10,6 +10,18 @@ module.exports = (error, req, res, next) => {
     error = new ErrorHandler(message, 400);
   }
 
+  // Json web token error...
+  if (error.code === "JsonWebTokenError") {
+    const message = `Json web token is invalid ty again `;
+    error = new ErrorHandler(message, 400);
+  }
+
+  // json token expired ...
+  if (error.code === "TokenExpiredError") {
+    const message = `Josn web token is expired ty again `;
+    error = new ErrorHandler(message, 400);
+  }
+
   // product not fount....
   res.status(error.statusCode).json({
     success: false,
