@@ -146,7 +146,7 @@ exports.delReviews = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("product not found", 404));
   }
 
-  console.log("query id -> ",req.query.id);
+  console.log("query id -> ", req.query.id);
 
   // delete the product reviews by given id....
   const reviews = product.reviews.filter(
