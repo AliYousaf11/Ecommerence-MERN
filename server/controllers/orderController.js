@@ -80,12 +80,16 @@ exports.getAllOrder = catchAsyncError(async (req, res, next) => {
 exports.updateOrder = catchAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
+  if (!order) {
+    return next(new ErrorHandler("Order Id not found", 400));
+  }
+
   if (order.statusCode === "Delivered") {
     return next(new ErrorHandler("You have already dispatch this order", 400));
   }
 
-  order.OrderItems.forEach(async (order) => {
-    await updateStock(order.product, order.quantity);
+  order.OrderItems.forEach(async (o) => {
+    await updateStock(o.product, o.quantity);
   });
 
   if (req.body.status === "Delivered") {
