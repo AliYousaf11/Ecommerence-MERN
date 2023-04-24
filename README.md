@@ -1,5 +1,5 @@
-# Ecommerence-MERN
-MERN Stack
+# Ecommerence-MERN (Only Backend)
+MERN Stack 
 
 1 - Error Handling
 2 - Authentication
